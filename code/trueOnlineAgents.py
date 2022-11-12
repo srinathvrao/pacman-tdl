@@ -9,12 +9,12 @@ import util
 
 class TrueOnlineSarsaLambdaAgent(ReinforcementAgent):
     def __init__(self, trace_decay=0.2, epsilon=0.05, gamma=0.8, alpha=0.2, numTraining=0, extractor='IdentityExtractor',  **args):
-        ReinforcementAgent.__init__(self, **args)
         self.index = 0  # This is always Pacman
         args['epsilon'] = epsilon
         args['gamma'] = gamma
         args['alpha'] = alpha
         args['numTraining'] = numTraining
+        ReinforcementAgent.__init__(self, **args)
         """
         Define feature vectors, q values, etc here
         """
@@ -67,7 +67,10 @@ class TrueOnlineSarsaLambdaAgent(ReinforcementAgent):
             return None
         shouldDoRandom = util.flipCoin(self.epsilon)
 
-        return random.choice(legalActions) if shouldDoRandom else self.getPolicy(state)
+        action = random.choice(
+            legalActions) if shouldDoRandom else self.getPolicy(state)
+        self.doAction(state, action)
+        return action
 
     def getPolicy(self, state):
         """
@@ -133,6 +136,9 @@ class TrueOnlineSarsaLambdaAgent(ReinforcementAgent):
 
     def updateWeights(self, state, action, nextState, reward):
         self.next_action = self.getAction(nextState)
+
+        if self.next_action is None:
+            return
 
         current_features = self.getFeatureCounter(state, action)
 
