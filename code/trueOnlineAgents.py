@@ -8,7 +8,7 @@ import util
 
 
 class TrueOnlineSarsaLambdaAgent(ReinforcementAgent):
-    def __init__(self, trace_decay=0.2, epsilon=0.05, gamma=0.8, alpha=0.2, numTraining=0, extractor='IdentityExtractor',  **args):
+    def __init__(self, trace_decay=0.8, epsilon=0.05, gamma=0.8, alpha=0.2, numTraining=0, extractor='IdentityExtractor',  **args):
         self.index = 0  # This is always Pacman
         args['epsilon'] = epsilon
         args['gamma'] = gamma
@@ -128,7 +128,7 @@ class TrueOnlineSarsaLambdaAgent(ReinforcementAgent):
             self.featureDotProduct(self.trace, state, action)
         new_trace = util.Counter()
         for feature, value in self.trace.items():
-            new_trace[feature] = value * feature_coefficient
+            new_trace[feature] = value * discount_coefficient
         for feature, value in self.getFeatureCounter(state, action).items():
             new_trace[feature] += feature_coefficient * value
 
@@ -157,4 +157,5 @@ class TrueOnlineSarsaLambdaAgent(ReinforcementAgent):
         for feature, value in current_features.items():
             next_weights[feature] -= self.alpha*(current_q-self.oldQ)*value
 
+        self.weights = next_weights.copy()
         self.oldQ = next_q
