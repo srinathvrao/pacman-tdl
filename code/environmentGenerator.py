@@ -3,6 +3,8 @@ import numpy as np
 from optparse import OptionParser
 from environmentAugmenter import layoutCorrector
 import sys
+import os
+import copy
 
 numGhosts = 2 # can be changed from command line
 numPacman = 1 # not implemented for >1 pacman agent
@@ -66,6 +68,55 @@ def wrapLayout(layout):
     lay.append(['%']*(w+2))
     return lay
 
+def putTunnel(lay):
+    defaultLay = copy.deepcopy(lay)
+    isTunnel=True
+    if(isTunnel==True):
+        t_height = 2 #a good size
+        t_width = 40 # change according to u,input
+        midIndex = len(lay)//2
+        r_index1=midIndex-t_height
+        r_index2=midIndex+t_height
+        for i in range(0,len(lay)):
+            if i>r_index1 and i<r_index2:
+                lay[i][-1]='  '
+            elif i==r_index1 or i==r_index2:
+                lay[i][-1]="%"
+            else:
+                lay[i].extend([' '*t_width])
+        for i in range(r_index1+1,r_index2):
+            lay[i].extend([' '*t_width])
+        #constructing the walls of the tunnel
+        lay[r_index1].extend(["%"]*t_width)
+        lay[r_index2].extend(["%"]*t_width)
+
+        #pick file from layouts
+        '''
+        import os, random
+        room_file = random.choice(os.listdir("./layouts"))
+        print(room_file)
+        room_file = open("./layouts/"+room_file,'r')
+        room_list = room_file.readlines()
+        room_file.close()
+        for i in range(len(room_list)):
+            room_list[i]=room_list[i].strip()
+            if i>= r_index1 and i<=r_index2:
+                room_list[i]=' '+room_list[i][1:]
+        for i in range(len(lay)):
+            if i <len(room_list):
+                lay[i].extend(room_list[i])
+        '''
+        room_list = defaultLay
+        for i in range(len(room_list)):
+            #room_list[i]=room_list[i].strip()
+            if i> r_index1 and i<  r_index2:
+                room_list[i][0]=''
+        for i in range(len(lay)):
+            if i <len(room_list):
+                lay[i].extend(room_list[i])
+
+    return lay
+
 
 def createLayout(width, height, numGhosts):
     
@@ -74,7 +125,9 @@ def createLayout(width, height, numGhosts):
     for ghost_pos in ghost_positions:
         layout = layoutCorrector(layout, ghost_pos)
 
-    return wrapLayout(layout)
+    lay = wrapLayout(layout)
+    lay_wtun = putTunnel(lay)
+    return lay_wtun
 
 def writeLayout(width, height, numGhosts):
     lay = createLayout(width, height, numGhosts)
@@ -82,6 +135,8 @@ def writeLayout(width, height, numGhosts):
     for i in lay:
         file.write("".join(i)+'\n')
     file.close()
+
+
     
 
 
@@ -115,7 +170,7 @@ if __name__ == "__main__":
     numPacman = 1 # not implemented for >1 pacman agent
 
     layout = createLayout(mazeWidth, mazeHeight, numGhosts)
-    writeLayout(mazeWidth, mazeHeight, numGhosts)
+    #writeLayout(mazeWidth, mazeHeight, numGhosts)
     for row in layout:
         print("".join(row))
 
