@@ -76,6 +76,14 @@ def createLayout(width, height, numGhosts):
 
     return wrapLayout(layout)
 
+def writeLayout(width, height, numGhosts):
+    lay = createLayout(width, height, numGhosts)
+    file = open("./layouts/custom_{0}_{1}_{2}.lay".format(width, height, numGhosts),"w")
+    for i in lay:
+        file.write("".join(i)+'\n')
+    file.close()
+    
+
 
 if __name__ == "__main__":
 
@@ -107,7 +115,7 @@ if __name__ == "__main__":
     numPacman = 1 # not implemented for >1 pacman agent
 
     layout = createLayout(mazeWidth, mazeHeight, numGhosts)
-
+    writeLayout(mazeWidth, mazeHeight, numGhosts)
     for row in layout:
         print("".join(row))
 
