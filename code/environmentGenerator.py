@@ -7,11 +7,11 @@ import os
 import copy
 
 t_height = 2 #default tunnel height
-t_width = 40 #default tunnel width
+t_width = 10 #default tunnel width
 
 # It is assumed Pacman always has Agent ID 0, and ghosts can take every other ID.
 
-def genLayout(width, height,isTunnel=False):
+def genLayout(width, height):
     
     '''
         Layout Generation:
@@ -31,45 +31,28 @@ def genLayout(width, height,isTunnel=False):
     interior.extend(["%"]*2) # 20% walls
     interior.extend(["."]*5) # 50% food dots
     
+
     layout = []
     possible_agent_positions = []
     #need to fill extra items in tunnel, hence we need separate conditional
-    if isTunnel:
-        midIndex = height//2
-        top_border_tunnel=midIndex-t_height
-        bottom_border_tunnel=midIndex+t_height
-        for y in range(height):
-            row=[]
-            if y>top_border_tunnel and y<bottom_border_tunnel:
-                for x in range(width+t_width):
-                    fill = random.choice(interior)
-                    #we don't want pacman to start in tunnel
-                    #if fill==' ': possible_agent_positions.append((x,y))
-                    row.append(fill)
-            else:
-                for x in range(width):
-                    fill = random.choice(interior)
-                    if fill==' ': possible_agent_positions.append((x,y))
-                    row.append(fill)
-            layout.append(row)
-    else:
-        for y in range(height):
-            row = []
-            for x in range(width):
-                fill = random.choice(interior)
-                if fill==' ': possible_agent_positions.append((x,y))
-                row.append(fill)
-            layout.append(row)
+    for y in range(height):
+        row = []
+        for x in range(width):
+            fill = random.choice(interior)
+            if fill==' ': possible_agent_positions.append((x,y))
+            row.append(fill)
+        layout.append(row)
     return layout,possible_agent_positions
 
 #fill layout with ghost and pacman 
-def addItems(layout,possible_agent_positions):
+def addItems(layout,possible_agent_positions,extraRoom = False):
 
     agent_positions = random.sample(possible_agent_positions, numGhosts + numPacman)
     pacman_position = agent_positions[0]
     ghost_positions = agent_positions[1:]
     pac_x, pac_y = pacman_position
-    layout[pac_y][pac_x] = 'P'
+    if not extraRoom:
+        layout[pac_y][pac_x] = 'P'
 
     for ghost_position in ghost_positions:
         ghost_x, ghost_y = ghost_position
@@ -98,15 +81,33 @@ def putTunnel(lay):
     top_border_tunnel=midIndex-t_height
     bottom_border_tunnel=midIndex+t_height
 
-    #adding the border for the tunnel
+
+    no_wall_interior = []
+    no_wall_interior.extend([" "]*5)
+    no_wall_interior.extend(["."]*5)
+
+
+    #constructing the tunnel
     for y in range(len(lay)):
+        #adding the border for the tunnel
         if y<=top_border_tunnel or y>=bottom_border_tunnel:
             lay[y].extend(['%']*t_width)
+        #adding items inside the tunnel
         elif y>top_border_tunnel or y<bottom_border_tunnel:
-            continue
+            row=[]
+            #tunnel without possibility of walls
+            for x in range(t_width):
+                fill = random.choice(no_wall_interior)
+                #we don't want pacman to start in tunnel
+                #if fill==' ': possible_agent_positions.append((x,y))
+                row.append(fill)
+            lay[y].extend(row)
+
         
     #constructing new room
-    room_list,_ = genLayout(mazeWidth-2,mazeHeight-2)
+    room_list,pac_ghost_pos = genLayout(mazeWidth-2,mazeHeight-2)
+    #layout, pacman_position, ghost_positions
+    room_list,_,__ = addItems(room_list,pac_ghost_pos,extraRoom=True)
     room_list = layoutCorrector(room_list,[]) #making sure all food is traversable for new room
 
     #appending room to our layout
@@ -119,13 +120,15 @@ def putTunnel(lay):
 
 def createLayout(width, height):
     
-    layout, possible_pacman_pos = genLayout(width-2,height-2,isTunnel=True)
-    layout, pacman_position, ghost_positions = addItems(layout, possible_pacman_pos)
+    layout, possible_pacman_pos = genLayout(width-2,height-2)
+    layout, pacman_position, ghost_positions = addItems(layout, possible_pacman_pos,extraRoom=False)
     for ghost_pos in ghost_positions:
         layout = layoutCorrector(layout, ghost_pos)
-    layout = putTunnel(layout)
+
+    for rooms in range(1,numRooms):
+        layout = putTunnel(layout)
+
     layout = wrapLayout(layout)
-    layout = layoutCorrector(layout,pacman_position)
     
     return layout
 
@@ -157,20 +160,23 @@ if __name__ == "__main__":
                       help='the height of the maze', metavar='HEIGHT', default=10)
     parser.add_option('-g', '--numGhosts', dest='numGhosts', type='int',
                       help='the number of ghost agents in the game', metavar='NUMGHOSTS', default=2)
+    parser.add_option('-r', '--rooms', dest='rooms', type='int',
+                      help='number of rooms', metavar='ROOMS', default=1)
     
 
     options, otherjunk = parser.parse_args(sys.argv[1:])
 
     if len(otherjunk) != 0:
         raise Exception('Command line input not understood: ' + str(otherjunk))
-    global mazeHeight,mazeWidth,numGhosts
+
+    global mazeHeight,mazeWidth,numGhosts,numRooms
 
     numPacman = 1 # not implemented for >1 pacman agent
     numGhosts = 2 # can be changed from command line
     mazeWidth = options.width
     mazeHeight = options.height
     numGhosts = options.numGhosts
-
+    numRooms = options.rooms
 
     layout = createLayout(mazeWidth, mazeHeight)
     
