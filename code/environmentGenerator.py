@@ -6,11 +6,6 @@ import sys
 import os
 import copy
 
-t_height = 2 #default tunnel height
-t_width = 10 #default tunnel width
-
-# It is assumed Pacman always has Agent ID 0, and ghosts can take every other ID.
-
 def genLayout(width, height):
     
     '''
@@ -169,14 +164,16 @@ if __name__ == "__main__":
     if len(otherjunk) != 0:
         raise Exception('Command line input not understood: ' + str(otherjunk))
 
-    global mazeHeight,mazeWidth,numGhosts,numRooms
+    global mazeHeight,mazeWidth,numGhosts,numRooms,t_height,t_width
 
     numPacman = 1 # not implemented for >1 pacman agent
-    numGhosts = 2 # can be changed from command line
+    numGhosts = 1 # ghost per room
     mazeWidth = options.width
     mazeHeight = options.height
     numGhosts = options.numGhosts
     numRooms = options.rooms
+    t_height = 2 #default tunnel height
+    t_width = mazeWidth #default tunnel width
 
     layout = createLayout(mazeWidth, mazeHeight)
     
