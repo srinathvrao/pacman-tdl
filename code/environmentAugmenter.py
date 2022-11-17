@@ -19,7 +19,7 @@ def layoutCorrector(layout, agent_position):
 
     h, w = len(layout), len(layout[0])
     numSpaces = sum([ True if layout[p][q] in [' ','.','P','G'] else False for p in range(h) for q in range(w)])
-    
+    if agent_position ==[] : return layout
     queue = [agent_position]
     visited = np.zeros((h,w)).astype(np.uint8)
 
