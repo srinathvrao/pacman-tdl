@@ -8,7 +8,7 @@ import util
 
 
 class TrueOnlineSarsaLambdaAgent(ReinforcementAgent):
-    def __init__(self, trace_decay=0.8, epsilon=0.05, gamma=0.8, alpha=0.2, numTraining=0, extractor='IdentityExtractor',  **args):
+    def __init__(self, trace_decay=0, epsilon=0.05, gamma=0.8, alpha=0.2, numTraining=0, extractor='IdentityExtractor',  **args):
         self.index = 0  # This is always Pacman
         args['epsilon'] = epsilon
         args['gamma'] = gamma
@@ -33,6 +33,8 @@ class TrueOnlineSarsaLambdaAgent(ReinforcementAgent):
         """
         Using weights, calculate q value according to linear function approximation
         """
+        if action is None:
+            return 0
         qValue = self.featureDotProduct(self.weights, state, action)
 
         return qValue
@@ -53,14 +55,12 @@ class TrueOnlineSarsaLambdaAgent(ReinforcementAgent):
 
         return value
 
-    def getAction(self, state):
+    def getAction(self, state, useSavedAction=True):
         """
         Using self.getQValue() calculate the action to take at a given state (epsilon greedy)
         """
-        if self.next_action is not None:
-            res = self.next_action
-            self.next_action = None
-            return res
+        if useSavedAction and self.next_action is not None:
+            return self.next_action
 
         legalActions = self.getLegalActions(state)
         if len(legalActions) == 0:
@@ -121,6 +121,7 @@ class TrueOnlineSarsaLambdaAgent(ReinforcementAgent):
         """
         self.updateTrace(state, action)
         self.updateWeights(state, action, nextState, reward)
+        print("Weights: {}".format(self.weights))
 
     def updateTrace(self, state, action):
         discount_coefficient = self.discount * self.trace_decay
@@ -135,10 +136,7 @@ class TrueOnlineSarsaLambdaAgent(ReinforcementAgent):
         self.trace = new_trace
 
     def updateWeights(self, state, action, nextState, reward):
-        self.next_action = self.getAction(nextState)
-
-        if self.next_action is None:
-            return
+        self.next_action = self.getAction(nextState, False)
 
         current_features = self.getFeatureCounter(state, action)
 
