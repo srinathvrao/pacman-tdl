@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-#
+# 
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -17,7 +17,6 @@
 from game import Directions, Actions
 import util
 
-
 class FeatureExtractor:
     def getFeatures(self, state, action):
         """
@@ -27,13 +26,11 @@ class FeatureExtractor:
         """
         util.raiseNotDefined()
 
-
 class IdentityExtractor(FeatureExtractor):
     def getFeatures(self, state, action):
         feats = util.Counter()
-        feats[(state, action)] = 1.0
+        feats[(state,action)] = 1.0
         return feats
-
 
 class CoordinateExtractor(FeatureExtractor):
     def getFeatures(self, state, action):
@@ -43,7 +40,6 @@ class CoordinateExtractor(FeatureExtractor):
         feats['y=%d' % state[0]] = 1.0
         feats['action=%s' % action] = 1.0
         return feats
-
 
 def closestFood(pos, food, walls):
     """
@@ -68,6 +64,7 @@ def closestFood(pos, food, walls):
     return None
 
 
+
 class SimpleExtractor(FeatureExtractor):
     """
     Returns simple features for a basic reflex Pacman:
@@ -81,6 +78,7 @@ class SimpleExtractor(FeatureExtractor):
         # extract the grid of food and wall locations and get the ghost locations
         food = state.getFood()
         walls = state.getWalls()
+        capsules = state.getCapsules()
         ghosts = state.getGhostPositions()
 
         features = util.Counter()
@@ -99,16 +97,44 @@ class SimpleExtractor(FeatureExtractor):
         # if there is no danger of ghosts then add the food feature
         if not features["#-of-ghosts-1-step-away"] and food[next_x][next_y]:
             features["eats-food"] = 1.0
+        
+
+        caps = []
+        n = len(walls[0])
+        for row in walls:
+            caps.append([False for _ in range(n)])
+
+        for x2,y2 in capsules:
+            caps[x2][y2] = True
+
+        ghostMap = []
+        n = len(walls[0])
+        for row in walls:
+            ghostMap.append([False for _ in range(n)])
+
+        for x2,y2 in ghosts:
+            ghostMap[int(x2)][int(y2)] = True
 
         dist = closestFood((next_x, next_y), food, walls)
+        dist2 = closestFood((next_x, next_y), caps, walls)
+        dist3 = closestFood((next_x, next_y), ghostMap, walls)
         if dist is not None:
             # make the distance a number less than one otherwise the update
             # will diverge wildly
             features["closest-food"] = float(dist) / \
                 (walls.width * walls.height)
+        if dist2 is not None:
+            # make the distance a number less than one otherwise the update
+            # will diverge wildly
+            features["closest-capsule"] = float(dist2) / \
+                (walls.width * walls.height)
+        if dist3 is not None:
+            # make the distance a number less than one otherwise the update
+            # will diverge wildly
+            features["closest-ghost"] = float(dist3) / (walls.width * walls.height)
+        
         features.divideAll(10.0)
         return features
-
 
 class GhostExtractor(FeatureExtractor):
     """
