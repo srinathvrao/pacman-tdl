@@ -22,9 +22,10 @@ def genLayout(width, height):
     '''
 
     interior = []
-    interior.extend([" "]*3) # 30% free space
-    interior.extend(["%"]*2) # 20% walls
-    interior.extend(["."]*5) # 50% food dots
+    interior.extend([" "]*30)
+    interior.extend(["%"]*20)
+    interior.extend(["."]*45)
+    interior.extend(["o"]*1)
     
 
     layout = []
@@ -40,7 +41,7 @@ def genLayout(width, height):
     return layout,possible_agent_positions
 
 #fill layout with ghost and pacman 
-def addItems(layout,possible_agent_positions,extraRoom = False):
+def addItems(layout,possible_agent_positions, numGhosts, numPacman, extraRoom = False):
 
     agent_positions = random.sample(possible_agent_positions, numGhosts + numPacman)
     pacman_position = agent_positions[0]
@@ -68,7 +69,7 @@ def wrapLayout(layout):
     lay.append(['%']*(w+2))
     return lay
 
-def putTunnel(lay):
+def putTunnel(lay, numGhosts, numPacman):
     #create new layout
 
     #calculating the borders for the tunnel
@@ -78,8 +79,9 @@ def putTunnel(lay):
 
 
     no_wall_interior = []
-    no_wall_interior.extend([" "]*5)
-    no_wall_interior.extend(["."]*5)
+    no_wall_interior.extend([" "]*10)
+    no_wall_interior.extend(["."]*10)
+    no_wall_interior.extend(["o"])
 
 
     #constructing the tunnel
@@ -100,35 +102,39 @@ def putTunnel(lay):
 
         
     #constructing new room
-    room_list,pac_ghost_pos = genLayout(mazeWidth-2,mazeHeight-2)
+    room_layout, possible_agent_positions = genLayout(mazeWidth-2,mazeHeight-2)
     #layout, pacman_position, ghost_positions
-    room_list,_,__ = addItems(room_list,pac_ghost_pos,extraRoom=True)
-    room_list = layoutCorrector(room_list,[]) #making sure all food is traversable for new room
-
+    room_layout,_,ghost_positions = addItems(room_layout, possible_agent_positions, numGhosts, numPacman, extraRoom=True)
+    # print(room_layout[len(room_layout)//2])
+    # for row in room_layout:
+    #     print("".join(row))
+    # print("---")
+    room_layout = layoutCorrector(room_layout, ghost_positions[0], firstRoom=False) #making sure all food is traversable for new room
+    # for row in room_layout:
+    #     print("".join(row))
     #appending room to our layout
     for y in range(len(lay)):
-        if y <len(room_list):
-            lay[y].extend(room_list[y])
+        if y <len(room_layout):
+            lay[y].extend(room_layout[y])
 
     return lay
 
 
-def createLayout(width, height):
+def createLayout(width, height, numRooms, numGhosts, numPacman):
     
-    layout, possible_pacman_pos = genLayout(width-2,height-2)
-    layout, pacman_position, ghost_positions = addItems(layout, possible_pacman_pos,extraRoom=False)
-    for ghost_pos in ghost_positions:
-        layout = layoutCorrector(layout, ghost_pos)
+    layout, possible_agent_positions = genLayout(width-2,height-2)
+    layout, pacman_position, ghost_positions = addItems(layout, possible_agent_positions, numGhosts, numPacman, extraRoom=False)
+    layout = layoutCorrector(layout, ghost_positions[0], firstRoom=True)
 
     for rooms in range(1,numRooms):
-        layout = putTunnel(layout)
+        layout = putTunnel(layout, numGhosts, numPacman)
 
     layout = wrapLayout(layout)
     
     return layout
 
-def writeLayout(width, height, numRooms):
-    lay = createLayout(width, height)
+def writeLayout(width, height, numRooms, numGhosts, numPacman):
+    lay = createLayout(width, height, numRooms, numGhosts, numPacman)
     file = open("./custom_layouts/custom_{0}_{1}_{2}.lay".format(width, height, numRooms),"w")
     for i in lay:
         file.write("".join(i)+'\n')
@@ -144,7 +150,7 @@ if __name__ == "__main__":
     USAGE:      python environmentGenerator.py <options>
     EXAMPLES:   (1) python environmentGenerator.py
                     - creates a random 10x10 pacman game layout, with 2 ghosts.
-                (2) python pacman.py -w 20 -l 25 -g 5
+                (2) python environmentGenerator.py -w 20 -l 25 -g 5
                     - creates a pacman game layout with width 20, height 25, and 5 ghost agents
     """
     parser = OptionParser(usageStr)
@@ -172,13 +178,13 @@ if __name__ == "__main__":
     mazeHeight = options.height
     numGhosts = options.numGhosts
     numRooms = options.rooms
-    t_height = 2 #default tunnel height
+    t_height = 1 #default tunnel height
     t_width = mazeWidth #default tunnel width
 
-    layout = createLayout(mazeWidth, mazeHeight)
+    layout = createLayout(mazeWidth, mazeHeight, numRooms, numGhosts, numPacman)
     
 
-    writeLayout(mazeWidth, mazeHeight, numRooms)
+    writeLayout(mazeWidth, mazeHeight, numRooms, numGhosts, numPacman)
     for row in layout:
         print("".join(row))
 
