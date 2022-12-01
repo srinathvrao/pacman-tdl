@@ -69,7 +69,7 @@ def wrapLayout(layout):
     lay.append(['%']*(w+2))
     return lay
 
-def putTunnel(lay, numGhosts, numPacman):
+def putTunnel(lay, numGhosts, numPacman, numRooms, roomID):
     #create new layout
 
     #calculating the borders for the tunnel
@@ -105,14 +105,10 @@ def putTunnel(lay, numGhosts, numPacman):
     room_layout, possible_agent_positions = genLayout(mazeWidth-2,mazeHeight-2)
     #layout, pacman_position, ghost_positions
     room_layout,_,ghost_positions = addItems(room_layout, possible_agent_positions, numGhosts, numPacman, extraRoom=True)
-    # print(room_layout[len(room_layout)//2])
-    # for row in room_layout:
-    #     print("".join(row))
-    # print("---")
-    room_layout = layoutCorrector(room_layout, ghost_positions[0], firstRoom=False) #making sure all food is traversable for new room
-    # for row in room_layout:
-    #     print("".join(row))
-    #appending room to our layout
+    if roomID == numRooms:
+        room_layout = layoutCorrector(room_layout, ghost_positions[0], lastRoom=True) #making sure all food is traversable for new room
+    else:
+        room_layout = layoutCorrector(room_layout, ghost_positions[0]) #making sure all food is traversable for new room
     for y in range(len(lay)):
         if y <len(room_layout):
             lay[y].extend(room_layout[y])
@@ -127,7 +123,7 @@ def createLayout(width, height, numRooms, numGhosts, numPacman):
     layout = layoutCorrector(layout, ghost_positions[0], firstRoom=True)
 
     for rooms in range(1,numRooms):
-        layout = putTunnel(layout, numGhosts, numPacman)
+        layout = putTunnel(layout, numGhosts, numPacman, numRooms, rooms+1)
 
     layout = wrapLayout(layout)
     
