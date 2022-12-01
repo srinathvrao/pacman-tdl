@@ -1,7 +1,7 @@
 import random
 import numpy as np
 
-def layoutCorrector(layout, agent_position, firstRoom=True):
+def layoutCorrector(layout, agent_position, firstRoom=False, lastRoom=False):
     '''
         Layout Correction:
             - layout: h x w 2d list of the interior
@@ -24,6 +24,9 @@ def layoutCorrector(layout, agent_position, firstRoom=True):
 
     if firstRoom:
         mid_x, mid_y = w-1, h//2
+        layout[mid_y][mid_x] = random.choice(['.',' '])
+    elif lastRoom:
+        mid_x, mid_y = 0, h//2
         layout[mid_y][mid_x] = random.choice(['.',' '])
     else:
         mid_x, mid_y = w-1, h//2
