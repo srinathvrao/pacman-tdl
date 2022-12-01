@@ -1,7 +1,7 @@
 import random
 import numpy as np
 
-def layoutCorrector(layout, agent_position):
+def layoutCorrector(layout, agent_position, firstRoom=True):
     '''
         Layout Correction:
             - layout: h x w 2d list of the interior
@@ -18,10 +18,19 @@ def layoutCorrector(layout, agent_position):
     '''
 
     h, w = len(layout), len(layout[0])
-    numSpaces = sum([ True if layout[p][q] in [' ','.','P','G'] else False for p in range(h) for q in range(w)])
-    if agent_position ==[] : return layout
+    numSpaces = sum([ True if layout[p][q] in [' ','.','P','G','o'] else False for p in range(h) for q in range(w)])
     queue = [agent_position]
     visited = np.zeros((h,w)).astype(np.uint8)
+
+    if firstRoom:
+        mid_x, mid_y = w-1, h//2
+        layout[mid_y][mid_x] = random.choice(['.',' '])
+    else:
+        mid_x, mid_y = w-1, h//2
+        layout[mid_y][mid_x] = random.choice(['.',' '])
+        mid_x = 0
+        layout[mid_y][mid_x] = random.choice(['.',' '])
+
 
     # BFS to verify there are no unreachable spaces.
     while len(queue) > 0:
@@ -84,5 +93,7 @@ def layoutCorrector(layout, agent_position):
             visited[y,x] = 1
             if layout[y][x]=='%':
                 layout[y][x] = random.choice(['.',' '])
+
+
 
     return layout
