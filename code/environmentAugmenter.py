@@ -24,15 +24,19 @@ def layoutCorrector(layout, agent_position, firstRoom=False, lastRoom=False):
 
     if firstRoom:
         mid_x, mid_y = w-1, h//2
-        layout[mid_y][mid_x] = random.choice(['.',' '])
+        if layout[mid_y][mid_x] not in ['P','G']:
+            layout[mid_y][mid_x] = random.choice(['.',' '])
     elif lastRoom:
         mid_x, mid_y = 0, h//2
-        layout[mid_y][mid_x] = random.choice(['.',' '])
+        if layout[mid_y][mid_x] not in ['P','G']:
+            layout[mid_y][mid_x] = random.choice(['.',' '])
     else:
         mid_x, mid_y = w-1, h//2
-        layout[mid_y][mid_x] = random.choice(['.',' '])
+        if layout[mid_y][mid_x] not in ['P','G']:
+            layout[mid_y][mid_x] = random.choice(['.',' '])
         mid_x = 0
-        layout[mid_y][mid_x] = random.choice(['.',' '])
+        if layout[mid_y][mid_x] not in ['P','G']:
+            layout[mid_y][mid_x] = random.choice(['.',' '])
 
 
     # BFS to verify there are no unreachable spaces.
