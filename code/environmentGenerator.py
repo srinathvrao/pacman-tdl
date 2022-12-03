@@ -22,9 +22,9 @@ def genLayout(width, height):
     '''
 
     interior = []
-    interior.extend([" "]*30)
+    interior.extend([" "]*50)
     interior.extend(["%"]*20)
-    interior.extend(["."]*45)
+    interior.extend(["."]*55)
     interior.extend(["o"]*1)
     
 
@@ -131,7 +131,7 @@ def createLayout(width, height, numRooms, numGhosts, numPacman):
 
 def writeLayout(width, height, numRooms, numGhosts, numPacman):
     lay = createLayout(width, height, numRooms, numGhosts, numPacman)
-    file = open("./custom_layouts/custom_{0}_{1}_{2}.lay".format(width, height, numRooms),"w")
+    file = open("./layouts/custom_{0}_{1}_{2}.lay".format(width, height, numRooms),"w")
     for i in lay:
         file.write("".join(i)+'\n')
     file.close()
@@ -156,7 +156,7 @@ if __name__ == "__main__":
     parser.add_option('-l', '--height', dest='height', type='int',
                       help='the height of the maze', metavar='HEIGHT', default=10)
     parser.add_option('-g', '--numGhosts', dest='numGhosts', type='int',
-                      help='the number of ghost agents in the game', metavar='NUMGHOSTS', default=2)
+                      help='the number of ghost agents per room', metavar='NUMGHOSTS', default=2)
     parser.add_option('-r', '--rooms', dest='rooms', type='int',
                       help='number of rooms', metavar='ROOMS', default=1)
     
@@ -174,7 +174,7 @@ if __name__ == "__main__":
     mazeHeight = options.height
     numGhosts = options.numGhosts
     numRooms = options.rooms
-    t_height = 1 #default tunnel height
+    t_height = 2 #default tunnel height
     t_width = mazeWidth #default tunnel width
 
     layout = createLayout(mazeWidth, mazeHeight, numRooms, numGhosts, numPacman)
