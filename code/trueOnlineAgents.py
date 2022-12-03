@@ -8,11 +8,14 @@ import util
 
 
 class TrueOnlineSarsaLambdaAgent(ReinforcementAgent):
-    def __init__(self, trace_decay=0, epsilon=0.05, gamma=0.8, alpha=0.2, numTraining=0, extractor='IdentityExtractor',  **args):
+    def __init__(self, trace_decay=0.1, epsilon=0.1, gamma=0.8, alpha=0.5, numTraining=0, extractor='IdentityExtractor',  **args):
         self.index = 0  # This is always Pacman
-        args['epsilon'] = epsilon
-        args['gamma'] = gamma
-        args['alpha'] = alpha
+        self.epsilon=0.05
+        self.alpha=0.8
+        self.discount = 0.8
+        args['epsilon'] = self.epsilon
+        args['gamma'] = self.discount
+        args['alpha'] = self.alpha
         args['numTraining'] = numTraining
         ReinforcementAgent.__init__(self, **args)
         """
@@ -121,7 +124,7 @@ class TrueOnlineSarsaLambdaAgent(ReinforcementAgent):
         """
         self.updateTrace(state, action)
         self.updateWeights(state, action, nextState, reward)
-        print("Weights: {}".format(self.weights))
+        # print("Weights: {}".format(self.weights))
 
     def updateTrace(self, state, action):
         discount_coefficient = self.discount * self.trace_decay
@@ -154,6 +157,5 @@ class TrueOnlineSarsaLambdaAgent(ReinforcementAgent):
 
         for feature, value in current_features.items():
             next_weights[feature] -= self.alpha*(current_q-self.oldQ)*value
-
         self.weights = next_weights.copy()
         self.oldQ = next_q
