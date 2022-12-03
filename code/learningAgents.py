@@ -19,7 +19,6 @@ import util
 import time
 import csv
 
-
 class ValueEstimationAgent(Agent):
     """
       Abstract agent which assigns values to (state,action)
@@ -37,7 +36,7 @@ class ValueEstimationAgent(Agent):
       Q-Values while acting in the environment.
     """
 
-    def __init__(self, alpha=1.0, epsilon=0.05, gamma=0.8, numTraining=10):
+    def __init__(self, alpha=1.0, epsilon=0.5, gamma=0.8, numTraining=10):
         """
         Sets options, which can be passed in via the Pacman command line using -a alpha=0.5,...
         alpha    - learning rate
@@ -47,6 +46,7 @@ class ValueEstimationAgent(Agent):
         """
         self.alpha = float(alpha)
         self.epsilon = float(epsilon)
+        self.eps = float(epsilon)
         self.discount = float(gamma)
         self.numTraining = int(numTraining)
 
@@ -152,12 +152,16 @@ class ReinforcementAgent(ValueEstimationAgent):
         if self.episodesSoFar < self.numTraining:
             self.accumTrainRewards += self.episodeRewards
             self.trainRewards.append(self.episodeRewards)
+            print("Trained Episode:",self.episodesSoFar, "Reward:",self.episodeRewards,"Exploration:", self.epsilon,"Learning:",self.alpha,"Discount:",self.discount)
             if self.episodesSoFar == self.numTraining-1:
-                print("Adding to file... Average Training Score:", sum(self.trainRewards)/len(self.trainRewards))
-                f = open("logs/runs2.csv",'a')
+                print("Adding to file... Average Training Score:", self.accumTrainRewards/len(self.trainRewards))
+                f = open("logs/tdlruns.csv",'a')
                 writer = csv.writer(f)
                 writer.writerow(self.trainRewards)
                 f.close()
+                self.trainRewards = []
+            if self.episodesSoFar >= self.numTraining // 2: 
+                self.epsilon = 0.0
         else:
             self.accumTestRewards += self.episodeRewards
         self.episodesSoFar += 1
@@ -165,6 +169,7 @@ class ReinforcementAgent(ValueEstimationAgent):
             # Take off the training wheels
             self.epsilon = 0.0    # no exploration
             self.alpha = 0.0      # no learning
+
 
     def isInTraining(self):
         return self.episodesSoFar < self.numTraining
@@ -190,9 +195,9 @@ class ReinforcementAgent(ValueEstimationAgent):
         self.numTraining = int(numTraining)
         self.epsilon = float(epsilon)
         self.alpha = float(alpha)
-        self.discount = float(gamma)
         self.trainRewards = []
-
+        self.discount = float(gamma)
+        self.wdict = dict()
 
     ################################
     # Controls needed for Crawler  #
@@ -241,9 +246,8 @@ class ReinforcementAgent(ValueEstimationAgent):
         # print(state)
         # print("Last State:")
         # print(self.lastState)
-        deltaReward = state.getScore() - self.lastState.getScore()
-        # deltaReward
 
+        deltaReward = state.getScore() - self.lastState.getScore()
         self.observeTransition(
             self.lastState, self.lastAction, state, deltaReward)
         self.stopEpisode()
