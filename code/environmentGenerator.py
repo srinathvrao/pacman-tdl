@@ -129,12 +129,19 @@ def createLayout(width, height, numRooms, numGhosts, numPacman):
     
     return layout
 
-def writeLayout(width, height, numRooms, numGhosts, numPacman):
-    lay = createLayout(width, height, numRooms, numGhosts, numPacman)
-    file = open("./layouts/custom_{0}_{1}_{2}.lay".format(width, height, numRooms),"w")
-    for i in lay:
+# def writeLayout(width, height, numRooms, numGhosts, numPacman):
+#     lay = createLayout(width, height, numRooms, numGhosts, numPacman)
+#     file = open("./layouts/custom_{0}_{1}_{2}.lay".format(width, height, numRooms),"w")
+#     for i in lay:
+#         file.write("".join(i)+'\n')
+#     file.close()
+
+def writeLayout(layout):
+    file = open("./custom_layouts/custom_{0}_{1}_{2}.lay".format(mazeWidth, mazeHeight, numRooms),"w")
+    for i in layout:
         file.write("".join(i)+'\n')
     file.close()
+
 
 
     
@@ -180,7 +187,10 @@ if __name__ == "__main__":
     layout = createLayout(mazeWidth, mazeHeight, numRooms, numGhosts, numPacman)
     
 
-    writeLayout(mazeWidth, mazeHeight, numRooms, numGhosts, numPacman)
+    #writeLayout(mazeWidth, mazeHeight, numRooms, numGhosts, numPacman)
+    writeLayout(layout)
+
+    
     for row in layout:
         print("".join(row))
 
