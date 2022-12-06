@@ -210,6 +210,8 @@ class ApproximateQAgent(PacmanQAgent):
             self.weights[wkey] += self.alpha * \
                 difference * self.features(state, action)[wkey]
 
+        print("Weights: {}".format(self.weights))
+
     def final(self, state):
         "Called at the end of each game."
         # call the super-class final method

@@ -14,6 +14,7 @@
 
 from game import Directions, Agent, Actions
 
+import csv
 import random,util,time
 
 class ValueEstimationAgent(Agent):
@@ -33,7 +34,7 @@ class ValueEstimationAgent(Agent):
       Q-Values while acting in the environment.
     """
 
-    def __init__(self, alpha=1.0, epsilon=0.05, gamma=0.8, numTraining = 10):
+    def __init__(self, alpha=2e-10, epsilon=0.5, gamma=0.8, numTraining = 10):
         """
         Sets options, which can be passed in via the Pacman command line using -a alpha=0.5,...
         alpha    - learning rate
@@ -146,6 +147,17 @@ class ReinforcementAgent(ValueEstimationAgent):
         """
         if self.episodesSoFar < self.numTraining:
             self.accumTrainRewards += self.episodeRewards
+            self.trainRewards.append(self.episodeRewards)
+            print("Trained Episode:",self.episodesSoFar, "Reward:",self.episodeRewards,"Exploration:", self.epsilon,"Learning:",self.alpha,"Discount:",self.discount)
+            if self.episodesSoFar == self.numTraining-1:
+                print("Adding to file... Average Training Score:", self.accumTrainRewards/len(self.trainRewards))
+                f = open("logs/approxruns.csv",'a')
+                writer = csv.writer(f)
+                writer.writerow(self.trainRewards)
+                f.close()
+                self.trainRewards = []
+            if self.episodesSoFar >= self.numTraining // 2: 
+                self.epsilon = 0.0
         else:
             self.accumTestRewards += self.episodeRewards
         self.episodesSoFar += 1
@@ -154,13 +166,15 @@ class ReinforcementAgent(ValueEstimationAgent):
             self.epsilon = 0.0    # no exploration
             self.alpha = 0.0      # no learning
 
+
+
     def isInTraining(self):
         return self.episodesSoFar < self.numTraining
 
     def isInTesting(self):
         return not self.isInTraining()
 
-    def __init__(self, actionFn = None, numTraining=100, epsilon=0.5, alpha=0.5, gamma=1):
+    def __init__(self, actionFn = None, numTraining=100, epsilon=0.5, alpha=2e-10, gamma=1):
         """
         actionFn: Function which takes a state and returns the list of legal actions
 
@@ -179,6 +193,8 @@ class ReinforcementAgent(ValueEstimationAgent):
         self.epsilon = float(epsilon)
         self.alpha = float(alpha)
         self.discount = float(gamma)
+        self.trainRewards = []
+        self.wdict = dict()
 
     ################################
     # Controls needed for Crawler  #
